@@ -13,7 +13,7 @@ import hashlib
 import hmac
 from M2Crypto.EVP import Cipher
 
-class SyncSample(object):
+class Sync(object):
     server = "https://auth.services.mozilla.com"
     api = "1.0"
     HMAC_INPUT = "Sync-AES_256_CBC-HMAC256"
@@ -27,7 +27,7 @@ class SyncSample(object):
         self.get_key()
 
     def get_node(self):
-        url = self.server + '/user/1/' + self.username + '/node/weave'
+        url = self.server + '/user/1.0/' + self.username + '/node/weave'
         r = requests.get(url, auth=(self.username, self._password))
         return r.read()
         
@@ -101,7 +101,7 @@ class SyncSample(object):
             return tmp + '=' * padding
         return base64.b32decode(denormalize(p))
 
-if __name__ == '__main__':
+def main():
     username = "user@bla"
     password = "secret"
     passphrase = "a-abcde-12345-abcde-12345-abcde"
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     except ImportError:
         pass
 
-    s = SyncSample(username, password, passphrase)
+    s = Sync(username, password, passphrase)
     meta = s.get_meta()
     assert meta['storageVersion'] == 5
 
@@ -122,3 +122,6 @@ if __name__ == '__main__':
     #     pprint.pprint(s.bookmark(id))
     passwords = s.passwords()
     pprint.pprint(passwords)
+
+if __name__ == '__main__':
+    main()
