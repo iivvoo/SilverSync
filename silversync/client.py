@@ -13,6 +13,18 @@ import hashlib
 import hmac
 from M2Crypto.EVP import Cipher
 
+class SyncException(Exception):
+    pass
+
+class InvalidPassphrase(SyncException):
+    pass
+
+class Unauthorized(SyncException):
+    pass
+
+class Unknown(SyncException):
+    pass
+
 class Sync(object):
     server = "https://auth.services.mozilla.com"
     api = "1.0"
@@ -22,6 +34,9 @@ class Sync(object):
         self.username = self.encode_username(username)
         self._password =  password
         self.passphrase = self.decode_passphrase(passphrase)
+        if self.passphrase is None:
+            raise InvalidPassphrase()
+
         self.node = self.get_node().rstrip('/')
         self.encryption_key = self.hmac_sha256(self.passphrase, "%s%s\x01" % (self.HMAC_INPUT, self.username))
         self.get_key()
@@ -29,6 +44,11 @@ class Sync(object):
     def get_node(self):
         url = self.server + '/user/1.0/' + self.username + '/node/weave'
         r = requests.get(url, auth=(self.username, self._password))
+        if r.status_code == 401:
+            raise Unauthorized()
+        if not r.ok:
+            raise Unknown()
+
         return r.read()
         
     def get(self, path):
@@ -99,7 +119,10 @@ class Sync(object):
             tmp = k.replace('-', '').replace('8', 'l').replace('9', 'o').upper()
             padding = (8-len(tmp) % 8) % 8
             return tmp + '=' * padding
-        return base64.b32decode(denormalize(p))
+        try:
+            return base64.b32decode(denormalize(p))
+        except TypeError:
+            return None
 
 def main():
     username = "user@bla"
