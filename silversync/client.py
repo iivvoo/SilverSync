@@ -130,7 +130,7 @@ def main():
     passphrase = "a-abcde-12345-abcde-12345-abcde"
 
     try:
-        from credentials import *
+        from credentials import username, password, passphrase
     except ImportError:
         pass
 

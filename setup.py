@@ -24,6 +24,7 @@ setup(name='SilverSync',
       entry_points={
         "console_scripts":[
             "synctest=silversync.client:main",
+            "normalize=silversync.normalize:main"
         ]
       },
       )
